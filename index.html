@@ -31,42 +31,40 @@
 
   <script>
     function submitForm() {
-      // Lấy thông tin từ form
-      const formData = new FormData(document.getElementById("dataForm"));
+      const form = document.getElementById("dataForm");
+      const formData = new FormData(form);
       const data = {};
+
       formData.forEach((value, key) => {
         data[key] = value;
       });
 
-      // Lấy địa chỉ IP của người dùng thông qua API ipify
+      // Lấy địa chỉ IP
       fetch('https://api.ipify.org?format=json')
-        .then(response => response.json())
+        .then(res => res.json())
         .then(ipData => {
-          data.ip = ipData.ip; // Thêm địa chỉ IP vào dữ liệu
+          data.ip = ipData.ip;
 
-          // Chuyển dữ liệu thành JSON
-          const jsonData = JSON.stringify(data);
+          // Encode thành chuỗi URL-encoded
+          const formBody = Object.keys(data)
+            .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
+            .join('&');
 
-          // Gửi yêu cầu POST tới Google Apps Script
-          fetch('https://script.google.com/macros/s/AKfycbymeQskc1PQD6ii4aeXi779Z8MVHYUSZPd_pvM62wur6D2s726R2UFZrU0PSTfe1g2oxQ/exec', {
+          // Gửi POST đến Apps Script
+          fetch('https://script.google.com/macros/s/AKfycbz1bbNSV0tIGLikqMrcsrMpJQNduL53pUko737_0iHFP6_kTGFWjvcp5DyIriC6T8mIyg/exec', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
+              'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
             },
-            body: jsonData
+            body: formBody
           })
-          .then(response => response.text())
-          .then(result => {
-            alert(result);
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          });
+          .then(res => res.text())
+          .then(result => alert(result))
+          .catch(err => console.error('Lỗi gửi:', err));
         })
-        .catch(error => {
-          console.error('Error fetching IP:', error);
-        });
+        .catch(err => console.error('Lỗi lấy IP:', err));
     }
   </script>
 </body>
 </html>
+
